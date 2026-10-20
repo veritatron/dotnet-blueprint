@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Blueprint.BuildingBlocks.Infrastructure\Blueprint.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Blueprint.Modules.Ordering.Application\Blueprint.Modules.Ordering.Application.csproj" />
+  </ItemGroup>
+</Project>

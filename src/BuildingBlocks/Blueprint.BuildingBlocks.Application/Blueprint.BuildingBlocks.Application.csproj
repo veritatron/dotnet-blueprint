@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Blueprint.BuildingBlocks.Domain\Blueprint.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\Blueprint.BuildingBlocks.Contracts\Blueprint.BuildingBlocks.Contracts.csproj" />
+  </ItemGroup>
+</Project>

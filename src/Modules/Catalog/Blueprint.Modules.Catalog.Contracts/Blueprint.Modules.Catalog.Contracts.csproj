@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Öffentlicher Vertrag des Catalog-Moduls: Integration Events, Modul-API (synchrone Abfragen) und HTTP-DTOs.
+    Andere Module dürfen AUSSCHLIESSLICH dieses Projekt referenzieren (geprüft durch Architekturtests).
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Blueprint.BuildingBlocks.Contracts\Blueprint.BuildingBlocks.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Erzwingt die Modulgrenzen des Moduliths automatisiert im CI. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hosts\Blueprint.Api\Blueprint.Api.csproj" />
+    <ProjectReference Include="..\..\src\Hosts\Blueprint.Web\Blueprint.Web.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Catalog\Blueprint.Modules.Catalog.Client\Blueprint.Modules.Catalog.Client.csproj" />
+  </ItemGroup>
+</Project>

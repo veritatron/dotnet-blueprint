@@ -1,0 +1,70 @@
+@page "/orders"
+@attribute [Authorize]
+@inject OrderingApiClient Ordering
+@using Blueprint.Modules.Ordering.Contracts.Orders
+
+<PageTitle>Bestellungen</PageTitle>
+
+<h1>Meine Bestellungen</h1>
+
+<FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalGap="8px" Style="margin-bottom: 12px;">
+    <FluentText>Der Status wechselt asynchron von <em>Pending</em> nach <em>Confirmed</em> bzw. <em>Rejected</em>.</FluentText>
+    <FluentSpacer />
+    <FluentButton IconStart="@(new Icons.Regular.Size20.ArrowClockwise())" OnClick="ReloadAsync" Loading="_loading">Aktualisieren</FluentButton>
+</FluentStack>
+
+@if (_error is not null)
+{
+    <FluentMessageBar Intent="MessageBarIntent.Error">@_error</FluentMessageBar>
+}
+
+<FluentDataGrid Items="@Items?.AsQueryable()" Loading="@(Items is null)" TGridItem="OrderResponse">
+    <PropertyColumn Property="@(o => o.CreatedAtUtc)" Title="Datum" Format="g" Sortable="true" />
+    <TemplateColumn Title="Positionen">
+        @string.Join(", ", context.Lines.Select(l => $"{l.Quantity}× {l.ProductName}"))
+    </TemplateColumn>
+    <PropertyColumn Property="@(o => o.Total)" Title="Summe" Format="N2" Align="DataGridCellAlignment.End" />
+    <PropertyColumn Property="@(o => o.Currency)" Title="Währung" />
+    <TemplateColumn Title="Status">
+        <FluentBadge Color="@StatusColor(context.Status)">@context.Status</FluentBadge>
+        @if (context.RejectionReason is not null)
+        {
+            <FluentText Size="TextSize.Size200"> @context.RejectionReason</FluentText>
+        }
+    </TemplateColumn>
+</FluentDataGrid>
+
+@code {
+    private bool _loading;
+    private string? _error;
+
+    [PersistentState]
+    public List<OrderResponse>? Items { get; set; }
+
+    protected override async Task OnInitializedAsync() => Items ??= await Ordering.GetMyOrdersAsync();
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        try
+        {
+            Items = await Ordering.GetMyOrdersAsync();
+            _error = null;
+        }
+        catch (ApiException exception)
+        {
+            _error = exception.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static BadgeColor StatusColor(string status) => status switch
+    {
+        "Confirmed" => BadgeColor.Success,
+        "Rejected" => BadgeColor.Danger,
+        _ => BadgeColor.Informative,
+    };
+}

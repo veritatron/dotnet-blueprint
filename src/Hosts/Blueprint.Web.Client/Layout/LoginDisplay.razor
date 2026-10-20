@@ -1,0 +1,38 @@
+@implements IDisposable
+@inject NavigationManager Navigation
+
+@* Logout per POST + Antiforgery-Token (verhindert Logout-CSRF).
+   Remarks: https://learn.microsoft.com/aspnet/core/blazor/security/blazor-web-app-with-oidc#client-side-redirects-for-logout *@
+<AuthorizeView>
+    <Authorized>
+        <FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalGap="8px" Width="auto">
+            <FluentText>@context.User.Identity?.Name</FluentText>
+            <form action="authentication/logout" method="post">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
+                <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Subtle">Abmelden</FluentButton>
+            </form>
+        </FluentStack>
+    </Authorized>
+    <NotAuthorized>
+        <FluentAnchorButton Href="authentication/login" ForceLoad="true" Appearance="ButtonAppearance.Primary">Anmelden</FluentAnchorButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? _currentUrl;
+
+    protected override void OnInitialized()
+    {
+        _currentUrl = Navigation.Uri;
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _currentUrl = Navigation.Uri;
+        StateHasChanged();
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

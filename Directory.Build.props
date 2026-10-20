@@ -1,0 +1,22 @@
+<Project>
+  <!--
+    Gemeinsame Build-Einstellungen für alle Projekte.
+    Remarks:
+      - Directory.Build.props: https://learn.microsoft.com/visualstudio/msbuild/customize-by-directory
+      - Nullable Reference Types: https://learn.microsoft.com/dotnet/csharp/nullable-references
+      - Code-Analyse (.NET Analyzers): https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591: fehlende XML-Kommentare für öffentliche Member sind im Blueprint erlaubt. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

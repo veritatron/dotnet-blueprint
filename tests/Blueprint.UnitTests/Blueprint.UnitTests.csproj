@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Remarks: https://learn.microsoft.com/dotnet/core/testing/unit-testing-mstest-intro -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\Catalog\Blueprint.Modules.Catalog.Application\Blueprint.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Ordering\Blueprint.Modules.Ordering.Application\Blueprint.Modules.Ordering.Application.csproj" />
+  </ItemGroup>
+</Project>

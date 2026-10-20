@@ -1,0 +1,38 @@
+# Remarks: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/code-style-rule-options
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{json,xml,csproj,props,targets,slnx,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_prefer_primary_constructors = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_sort_system_directives_first = true
+
+# CA1848/CA1873: LoggerMessage-Source-Generator wird verwendet, wo es sinnvoll ist.
+dotnet_diagnostic.CA1848.severity = suggestion
+# CA2007: ConfigureAwait ist in ASP.NET Core nicht notwendig (kein SynchronizationContext).
+dotnet_diagnostic.CA2007.severity = none
+# CA1515: Typen in App-Projekten dürfen public sein (Modul-Grenzen werden über Projekte erzwungen).
+dotnet_diagnostic.CA1515.severity = none
+# CA1062: Nullable Reference Types übernehmen die Argumentprüfung.
+dotnet_diagnostic.CA1062.severity = none
+# CA1711/CA1716: Namen wie "EventHandler"-Suffix oder "Shared" sind im DDD-Kontext beabsichtigt.
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1716.severity = none
+# IDE0005 benötigt GenerateDocumentationFile (ist aktiv).
+dotnet_diagnostic.IDE0005.severity = warning
+
+[**/Migrations/**.cs]
+generated_code = true
+dotnet_diagnostic.IDE0005.severity = none

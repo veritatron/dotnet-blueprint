@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.bundle.scp.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* Globale WebAssembly-Interaktivität mit Prerendering.
+       Remarks: https://learn.microsoft.com/aspnet/core/blazor/components/render-modes#apply-a-render-mode-to-the-entire-app *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    @* Fluent UI lädt IMask (FluentNumberInput) sonst zur Laufzeit von unpkg.com. Lokal ausgeliefert: kein CDN-Zwang,
+       CSP-freundlich und offline-fähig. Version muss zur Fluent-UI-Version passen (siehe docs/frontend.md). *@
+    <script src="@Assets["lib/imask/imask.min.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

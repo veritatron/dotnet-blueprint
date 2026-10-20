@@ -1,0 +1,25 @@
+# Remarks: https://learn.microsoft.com/aspnet/core/test/http-files
+# Token erzeugen: dotnet user-jwts create --project src/Hosts/Blueprint.Api --audience blueprint-api --claim roles=catalog-admin
+@api = https://localhost:7101
+@token = <token>
+
+GET {{api}}/api/catalog/products
+Authorization: Bearer {{token}}
+
+###
+POST {{api}}/api/catalog/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "BP-001", "name": "Blueprint Mug", "price": 12.90, "currency": "EUR", "initialStock": 10 }
+
+###
+POST {{api}}/api/ordering/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "lines": [ { "productId": "<product-id>", "quantity": 2 } ] }
+
+###
+GET {{api}}/api/ordering/orders
+Authorization: Bearer {{token}}

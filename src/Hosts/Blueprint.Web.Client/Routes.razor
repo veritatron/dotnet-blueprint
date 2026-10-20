@@ -1,0 +1,21 @@
+@* Remarks: https://learn.microsoft.com/aspnet/core/blazor/security/#authorizeview-component
+           https://learn.microsoft.com/aspnet/core/blazor/fundamentals/routing *@
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    <FluentMessageBar Intent="MessageBarIntent.Warning" Title="Kein Zugriff">
+                        Sie sind nicht berechtigt, diese Seite aufzurufen.
+                    </FluentMessageBar>
+                }
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

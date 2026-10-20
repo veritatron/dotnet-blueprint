@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Öffentlicher Vertrag des Ordering-Moduls (Integration Events + HTTP-DTOs). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Blueprint.BuildingBlocks.Contracts\Blueprint.BuildingBlocks.Contracts.csproj" />
+  </ItemGroup>
+</Project>

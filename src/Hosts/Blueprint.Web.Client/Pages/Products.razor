@@ -1,0 +1,110 @@
+@page "/products"
+@attribute [Authorize]
+@inject CatalogApiClient Catalog
+@inject OrderingApiClient Ordering
+@inject NavigationManager Navigation
+@using Blueprint.Modules.Catalog.Contracts.Products
+@using Blueprint.Modules.Ordering.Contracts.Orders
+
+<PageTitle>Produkte</PageTitle>
+
+<h1>Produkte</h1>
+
+@if (_message is not null)
+{
+    <FluentMessageBar Intent="@_messageIntent" AllowDismiss="true">@_message</FluentMessageBar>
+}
+
+<AuthorizeView Roles="catalog-admin" Context="authState">
+    <FluentCard Style="margin-bottom: 16px;">
+        @* Client-Validierung mit denselben DataAnnotations wie der Server.
+           Remarks: https://learn.microsoft.com/aspnet/core/blazor/forms/validation *@
+        <EditForm Model="_newProduct" OnValidSubmit="CreateProductAsync" FormName="create-product">
+            <DataAnnotationsValidator />
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="8px">
+                <FluentText Weight="TextWeight.Semibold">Neues Produkt</FluentText>
+                <FluentStack HorizontalGap="8px" Wrap="true">
+                    <FluentTextInput Label="SKU" @bind-Value="_newProduct.Sku" Required="true" />
+                    <FluentTextInput Label="Name" @bind-Value="_newProduct.Name" Required="true" />
+                    <FluentNumberInput TValue="decimal" Label="Preis" @bind-Value="_newProduct.Price" IsDecimal="true" />
+                    <FluentTextInput Label="Währung" @bind-Value="_newProduct.Currency" Width="80px" />
+                    <FluentNumberInput TValue="int" Label="Bestand" @bind-Value="_newProduct.InitialStock" />
+                </FluentStack>
+                <FluentValidationSummary />
+                <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Primary" Loading="_busy">Anlegen</FluentButton>
+            </FluentStack>
+        </EditForm>
+    </FluentCard>
+</AuthorizeView>
+
+<FluentDataGrid Items="@Items?.AsQueryable()" Loading="@(Items is null)" TGridItem="ProductResponse">
+    <PropertyColumn Property="@(p => p.Sku)" Title="SKU" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Name)" Title="Name" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Price)" Title="Preis" Format="N2" Align="DataGridCellAlignment.End" />
+    <PropertyColumn Property="@(p => p.Currency)" Title="Währung" />
+    <PropertyColumn Property="@(p => p.StockQuantity)" Title="Bestand" Align="DataGridCellAlignment.End" />
+    <TemplateColumn Title="" Align="DataGridCellAlignment.End">
+        <FluentButton Size="ButtonSize.Small" Disabled="@(context.StockQuantity == 0 || _busy)" OnClick="@(() => OrderAsync(context))">1× bestellen</FluentButton>
+    </TemplateColumn>
+</FluentDataGrid>
+
+@code {
+    private readonly CreateProductRequest _newProduct = new();
+    private string? _message;
+    private MessageBarIntent _messageIntent = MessageBarIntent.Info;
+    private bool _busy;
+
+    /// <summary>
+    /// Wird beim Prerendering geladen und an den WebAssembly-Client übergeben (kein doppelter API-Aufruf).
+    /// Remarks: https://learn.microsoft.com/aspnet/core/blazor/state-management/prerendered-state-persistence
+    /// </summary>
+    [PersistentState]
+    public List<ProductResponse>? Items { get; set; }
+
+    protected override async Task OnInitializedAsync() => Items ??= await Catalog.GetProductsAsync();
+
+    private async Task CreateProductAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var created = await Catalog.CreateProductAsync(_newProduct);
+            Show($"Produkt '{created?.Name}' angelegt.", MessageBarIntent.Success);
+            Items = await Catalog.GetProductsAsync();
+        });
+    }
+
+    private async Task OrderAsync(ProductResponse product)
+    {
+        await RunAsync(async () =>
+        {
+            var order = await Ordering.PlaceOrderAsync(new PlaceOrderRequest
+            {
+                Lines = [new PlaceOrderLineRequest { ProductId = product.Id, Quantity = 1 }],
+            });
+            Show($"Bestellung {order?.Id} aufgegeben – Status: {order?.Status}. Die Bestandsreservierung läuft asynchron.", MessageBarIntent.Success);
+        });
+    }
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        _busy = true;
+        try
+        {
+            await action();
+        }
+        catch (ApiException exception)
+        {
+            Show(exception.Message, MessageBarIntent.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void Show(string message, MessageBarIntent intent)
+    {
+        _message = message;
+        _messageIntent = intent;
+    }
+}

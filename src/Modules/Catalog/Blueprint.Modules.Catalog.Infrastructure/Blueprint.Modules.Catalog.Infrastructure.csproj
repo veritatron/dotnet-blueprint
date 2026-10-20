@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Nur für Design-Time-Tools (dotnet ef migrations ...), wird nicht ausgeliefert. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Blueprint.BuildingBlocks.Infrastructure\Blueprint.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Blueprint.Modules.Catalog.Application\Blueprint.Modules.Catalog.Application.csproj" />
+  </ItemGroup>
+</Project>

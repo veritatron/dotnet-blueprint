@@ -1,1 +1,43 @@
-<Solution />
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Aspire/">
+    <Project Path="src/Aspire/Blueprint.AppHost/Blueprint.AppHost.csproj" />
+    <Project Path="src/Aspire/Blueprint.ServiceDefaults/Blueprint.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Blueprint.BuildingBlocks.Application/Blueprint.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/Blueprint.BuildingBlocks.Contracts/Blueprint.BuildingBlocks.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/Blueprint.BuildingBlocks.Domain/Blueprint.BuildingBlocks.Domain.csproj" />
+    <Project Path="src/BuildingBlocks/Blueprint.BuildingBlocks.Infrastructure/Blueprint.BuildingBlocks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/Blueprint.Api/Blueprint.Api.csproj" />
+    <Project Path="src/Hosts/Blueprint.Web/Blueprint.Web.csproj" />
+    <Project Path="src/Hosts/Blueprint.Web.Client/Blueprint.Web.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Catalog/">
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Application/Blueprint.Modules.Catalog.Application.csproj" />
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Client/Blueprint.Modules.Catalog.Client.csproj" />
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Contracts/Blueprint.Modules.Catalog.Contracts.csproj" />
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Domain/Blueprint.Modules.Catalog.Domain.csproj" />
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Infrastructure/Blueprint.Modules.Catalog.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Ordering/">
+    <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Application/Blueprint.Modules.Ordering.Application.csproj" />
+    <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Contracts/Blueprint.Modules.Ordering.Contracts.csproj" />
+    <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Domain/Blueprint.Modules.Ordering.Domain.csproj" />
+    <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Infrastructure/Blueprint.Modules.Ordering.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Blueprint.ArchitectureTests/Blueprint.ArchitectureTests.csproj" />
+    <Project Path="tests/Blueprint.UnitTests/Blueprint.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Blueprint.BuildingBlocks.Application\Blueprint.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\Blueprint.Modules.Catalog.Domain\Blueprint.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\Blueprint.Modules.Catalog.Contracts\Blueprint.Modules.Catalog.Contracts.csproj" />
+    <!-- Erlaubt: Contracts anderer Module (für Integration Events / Modul-APIs). -->
+    <ProjectReference Include="..\..\Ordering\Blueprint.Modules.Ordering.Contracts\Blueprint.Modules.Ordering.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blueprint.Modules.Catalog.Infrastructure" />
+    <InternalsVisibleTo Include="Blueprint.UnitTests" />
+  </ItemGroup>
+</Project>

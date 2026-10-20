@@ -1,0 +1,21 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.2">
+  <!--
+    Aspire AppHost: lokale Orchestrierung (Datenbank, Identity Provider, API, BFF) inkl. Dashboard, Service Discovery und Telemetrie.
+    Remarks: https://learn.microsoft.com/dotnet/aspire/fundamentals/app-host-overview
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>blueprint-apphost-91d2b0e4</UserSecretsId>
+    <!-- Dashboard/DCP kommen als NuGet-Pakete (Standard); das Aspire-CLI-Bundle wird nicht benötigt. -->
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Keycloak" />
+    <PackageReference Include="Aspire.Hosting.Oracle" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Hosts\Blueprint.Api\Blueprint.Api.csproj" />
+    <ProjectReference Include="..\..\Hosts\Blueprint.Web\Blueprint.Web.csproj" />
+  </ItemGroup>
+</Project>

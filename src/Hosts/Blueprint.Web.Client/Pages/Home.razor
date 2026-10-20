@@ -1,0 +1,18 @@
+@page "/"
+
+<PageTitle>Blueprint</PageTitle>
+
+<h1>.NET Modular Monolith Blueprint</h1>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12px">
+    <FluentText>
+        Blazor WebAssembly + BFF + Web API als modularer Monolith. Die Module <strong>Catalog</strong> und
+        <strong>Ordering</strong> kommunizieren synchron über öffentliche Modul-APIs und asynchron über Integration Events
+        (Outbox → Event Bus → Inbox).
+    </FluentText>
+    <AuthorizeView>
+        <NotAuthorized>
+            <FluentMessageBar Intent="MessageBarIntent.Info" Title="Hinweis">Bitte melden Sie sich an, um Produkte und Bestellungen zu sehen.</FluentMessageBar>
+        </NotAuthorized>
+    </AuthorizeView>
+</FluentStack>

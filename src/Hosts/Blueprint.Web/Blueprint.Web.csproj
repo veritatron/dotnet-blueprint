@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!--
+    Backend for Frontend (BFF): hostet den Blazor-WebAssembly-Client, übernimmt den OIDC-Login (Cookie)
+    und leitet /api/** per YARP mit dem Access Token an die Web API weiter. Tokens verlassen nie den Server.
+    Remarks: https://learn.microsoft.com/aspnet/core/blazor/security/blazor-web-app-with-oidc?pivots=with-yarp-and-aspire
+  -->
+  <PropertyGroup>
+    <UserSecretsId>blueprint-web-3f0b9c52</UserSecretsId>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Aspire\Blueprint.ServiceDefaults\Blueprint.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Blueprint.Web.Client\Blueprint.Web.Client.csproj" />
+  </ItemGroup>
+</Project>

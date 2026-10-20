@@ -1,0 +1,40 @@
+# Remarks: https://learn.microsoft.com/dotnet/devops/dotnet-test-github-action
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: |
+          dotnet restore dotnet-blueprint.slnx
+          dotnet tool restore
+
+      - name: Build
+        run: dotnet build dotnet-blueprint.slnx --no-restore -c Release
+
+      - name: Test (Unit + Architektur)
+        run: dotnet test dotnet-blueprint.slnx --no-build -c Release
+
+      # Schlägt fehl, wenn das EF-Core-Modell geändert, aber keine Migration erzeugt wurde.
+      # Remarks: https://learn.microsoft.com/ef/core/managing-schemas/migrations/managing#checking-for-pending-model-changes
+      - name: Check pending EF Core model changes
+        run: |
+          for module in Catalog Ordering; do
+            for provider in Oracle PostgreSql; do
+              dotnet ef migrations has-pending-model-changes \
+                --project src/Modules/$module/Blueprint.Modules.$module.Infrastructure \
+                --context ${provider}${module}DbContext --no-build --configuration Release
+            done
+          done

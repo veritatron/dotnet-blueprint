@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Basis-Typen für öffentliche Modul-Verträge (Integration Events, DTOs).
+    Bewusst ohne Abhängigkeiten: Contracts-Projekte werden später als NuGet-Pakete zwischen Microservices geteilt
+    und auch vom Blazor-WebAssembly-Client referenziert.
+  -->
+</Project>
