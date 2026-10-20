@@ -33,8 +33,12 @@ public static class PersistenceExtensions
         var options = builder.Configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
 
         // Modul-spezifischer Connection String hat Vorrang → Modul kann ohne Codeänderung eine eigene DB bekommen.
-        var connectionString = builder.Configuration.GetConnectionString(moduleName)
-            ?? builder.Configuration.GetConnectionString(options.ConnectionStringName)
+        // Wird erst beim ersten Erzeugen des DbContext ausgewertet: so startet der Host auch ohne Datenbank-Konfiguration,
+        // z. B. bei der Build-Time-Generierung der OpenAPI-Dokumente.
+        var configuration = builder.Configuration;
+        string ConnectionString() =>
+            configuration.GetConnectionString(moduleName)
+            ?? configuration.GetConnectionString(options.ConnectionStringName)
             ?? throw new InvalidOperationException(
                 $"Kein Connection String '{moduleName}' oder '{options.ConnectionStringName}' konfiguriert.");
 
@@ -45,7 +49,7 @@ public static class PersistenceExtensions
             case DatabaseProvider.Oracle:
                 var compatibility = Enum.Parse<OracleSQLCompatibility>(options.OracleSqlCompatibility, ignoreCase: true);
                 builder.Services.AddDbContext<TContext, TOracleContext>(db => db.UseOracle(
-                    connectionString,
+                    ConnectionString(),
                     oracle => oracle
                         .UseOracleSQLCompatibility(compatibility)
                         .MigrationsHistoryTable(HistoryRepository.DefaultTableName, schema)));
@@ -53,7 +57,7 @@ public static class PersistenceExtensions
 
             case DatabaseProvider.PostgreSql:
                 builder.Services.AddDbContext<TContext, TPostgreSqlContext>(db => db.UseNpgsql(
-                    connectionString,
+                    ConnectionString(),
                     npgsql => npgsql
                         .EnableRetryOnFailure()
                         .MigrationsHistoryTable(HistoryRepository.DefaultTableName, schema)));

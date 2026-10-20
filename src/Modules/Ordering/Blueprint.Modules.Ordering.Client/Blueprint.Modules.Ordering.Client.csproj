@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Generierter HTTP-Client der Ordering-API (Refit-Interface + DTOs), erzeugt von Refitter aus openapi/blueprint_ordering.json.
+    Verwendet vom Blazor-Client (und künftig von anderen Services).
+    Remarks: https://refitter.github.io/  ·  https://learn.microsoft.com/aspnet/core/fundamentals/openapi/aspnetcore-openapi
+  -->
+  <PropertyGroup>
+    <!-- Keine Telemetrie aus dem Build heraus. -->
+    <RefitterNoLogging>true</RefitterNoLogging>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Refitter fügt die generierten Dateien beim Build selbst hinzu (sonst CS2002: doppelt kompiliert). -->
+    <Compile Remove="Generated/**" />
+    <None Include="Generated/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Refit.HttpClientFactory" />
+    <PackageReference Include="Refitter.MSBuild" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+{
+  "openApiPath": "../../../../openapi/blueprint_ordering.json",
+  "namespace": "Blueprint.Modules.Ordering.Client",
+  "contractsNamespace": "Blueprint.Modules.Ordering.Client.Models",
+  "naming": {
+    "useOpenApiTitle": false,
+    "interfaceName": "OrderingApi"
+  },
+  "outputFolder": "./Generated",
+  "outputFilename": "OrderingApi.g.cs",
+  "useCancellationTokens": true,
+  "operationNameTemplate": "{operationName}Async",
+  "typeAccessibility": "Public",
+  "generateDefaultAdditionalProperties": false,
+  "codeGeneratorSettings": {
+    "generateNullableReferenceTypes": true,
+    "generateOptionalPropertiesAsNullable": false,
+    "arrayType": "System.Collections.Generic.List",
+    "arrayInstanceType": "System.Collections.Generic.List"
+  }
+}

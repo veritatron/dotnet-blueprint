@@ -12,7 +12,9 @@ mit minimalem Aufwand als **Microservices** auslagern.
 | Integration Events: erst In-Memory, später Kafka/RabbitMQ/… | `IEventBus`-Abstraktion + **Transactional Outbox** + **Inbox** (Idempotenz). Transport per `Messaging:Transport`. |
 | Module/Services müssen Daten voneinander abfragen | Synchrone **Modul-APIs** (`ICatalogModuleApi`) in den Contracts: in-process im Monolith, HTTP-Client (`Blueprint.Modules.Catalog.Client`) nach Auslagerung. |
 | .NET 10, Fluent UI Blazor, BFF | Blazor Web App (WASM-Interaktivität) als BFF mit OIDC-Cookie + YARP-Forwarding – Muster aus der Microsoft-Doku. |
-| Nur Microsoft-Best-Practices | Jede relevante Stelle verweist per `<remarks>` auf die Microsoft-Dokumentation. Keine Fremd-Frameworks für Mediator/Mapping/Validierung. |
+| Clients aus OpenAPI mit Refitter | Ein OpenAPI-Dokument pro Modul, beim Build erzeugt (`openapi/`); **Refitter** generiert daraus Refit-Clients + DTOs (`*.Client`). Blazor und Modul-zu-Modul-HTTP nutzen nur diese Clients. |
+| Authentifizierung OIDC mit Keycloak | Aspire-Keycloak-Integration: `AddKeycloakOpenIdConnect` im BFF (Code + PKCE), `AddKeycloakJwtBearer` in der API; Realm per Import. |
+| Microsoft-Best-Practices | Jede relevante Stelle verweist per `<remarks>` auf die Microsoft-Dokumentation. Keine Fremd-Frameworks für Mediator/Mapping/Validierung. Einzige bewusst gewählte Nicht-Microsoft-Bausteine: Refit/Refitter (gewünscht) und Keycloak. |
 
 ![Produkte](docs/images/products.png)
 
@@ -25,7 +27,8 @@ flowchart LR
         OIDC["OIDC Login<br/>Cookie-Session"]
         YARP["YARP Forwarder<br/>+ Access Token"]
     end
-    BFF -- "OIDC Code + PKCE" --> IdP[(Keycloak / Entra ID)]
+    BFF -- "OIDC Code + PKCE" --> IdP[(Keycloak)]
+    API -. "JWT-Validierung (JWKS)" .-> IdP
     YARP -- "Bearer JWT" --> API
     subgraph API["Blueprint.Api (Modular Monolith)"]
         Catalog["Catalog-Modul"]
@@ -63,12 +66,13 @@ src/
     *.Application                Command/Query/Event-Handler-Abstraktionen, Unit of Work, Outbox-Interface
     *.Infrastructure             ModuleDbContext, Provider-Umschaltung, Outbox/Inbox, Event Bus, Problem Details
   Modules/
-    Catalog/  Domain | Application | Infrastructure | Contracts | Client
-    Ordering/ Domain | Application | Infrastructure | Contracts
+    Catalog/  Domain | Application | Infrastructure | Contracts | Client (generiert)
+    Ordering/ Domain | Application | Infrastructure | Contracts | Client (generiert)
   Hosts/
     Blueprint.Api                Modulith-Host (setzt die Module zusammen)
     Blueprint.Web                BFF + Blazor-Server-Host (Prerendering)
     Blueprint.Web.Client         Blazor WebAssembly
+openapi/                         OpenAPI-Dokumente pro Modul (beim Build erzeugt, eingecheckt)
 tests/
   Blueprint.ArchitectureTests    Modulgrenzen & Schichtenregeln
   Blueprint.UnitTests            Domain- und Handler-Tests (MSTest)
@@ -81,7 +85,8 @@ docs/                            Vertiefungen (Messaging, Datenbank, Frontend, A
 - `Application` kennt keine Infrastruktur.
 - Ein Modul darf von anderen Modulen **nur** `*.Contracts` referenzieren.
 - `*.Contracts` hängen nur von `Blueprint.BuildingBlocks.Contracts` ab.
-- Der WebAssembly-Client kennt nur `*.Contracts`.
+- `*.Client` (generiert) kennen nur `*.Contracts`.
+- Der WebAssembly-Client kennt nur die generierten `*.Client`-Projekte.
 
 ## Schnellstart
 
@@ -107,15 +112,11 @@ PostgreSQL statt Oracle:
 dotnet run --project src/Aspire/Blueprint.AppHost -- --Database:Provider=PostgreSql
 ```
 
-### API ohne Identity Provider testen
+### API direkt testen
 
-```bash
-# Erstellt ein lokales Entwickler-Token und konfiguriert die API dafür (appsettings.Development.json + User Secrets)
-dotnet user-jwts create --project src/Hosts/Blueprint.Api --audience blueprint-api --claim roles=catalog-admin
-```
-
-Anschließend `src/Hosts/Blueprint.Api/Blueprint.Api.http` verwenden.
-Siehe [Manage JSON Web Tokens in development with dotnet user-jwts](https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn).
+`src/Hosts/Blueprint.Api/Blueprint.Api.http` holt per **Client Credentials** ein Token vom lokalen Keycloak
+(Client `blueprint-dev`, Service Account mit `catalog-admin`, nur Entwicklung) und ruft damit die API auf.
+Die OpenAPI-Dokumente sind in Development unter `/openapi/catalog.json` und `/openapi/ordering.json` erreichbar.
 
 ### Tests
 
@@ -133,14 +134,17 @@ dotnet test dotnet-blueprint.slnx
 | `Database:OracleSqlCompatibility` | `DatabaseVersion23` | Oracle-SQL-Dialekt (`DatabaseVersion19`, `…21`, `…23`) |
 | `Messaging:Transport` | `InMemory` | Event-Bus-Transport |
 | `Messaging:Outbox:*` | 2 s / 50 / 10 | Polling-Intervall, Batchgröße, max. Versuche |
-| `Authentication:Schemes:Bearer:*` | – | JWT-Validierung der API (Authority, ValidAudiences …) |
-| `Authentication:Oidc:*` | – | OIDC-Client des BFF (Authority, ClientId, ClientSecret) |
+| `Authentication:Keycloak:Realm` | `blueprint` | Keycloak-Realm (API + BFF) |
+| `Authentication:Keycloak:Audience` | `blueprint-api` | Erwartete Audience in Access Tokens (API) |
+| `Authentication:Keycloak:ClientId` / `ClientSecret` | `blueprint-web` / – | OIDC-Client des BFF (Secret nur via User Secrets/Umgebung) |
+| `Services:keycloak:*`, `Services:api:*` | Aspire | Service-Discovery-Adressen (ohne Aspire selbst setzen) |
 
 ## Weiterführende Dokumentation
 
 - [docs/messaging.md](docs/messaging.md) – Domain vs. Integration Events, Outbox/Inbox, Broker anbinden (RabbitMQ, Kafka, Azure Service Bus)
 - [docs/database.md](docs/database.md) – Schemas pro Modul, Oracle ↔ PostgreSQL, Migrations
-- [docs/frontend.md](docs/frontend.md) – BFF, Authentifizierung, Fluent UI Blazor
+- [docs/api-clients.md](docs/api-clients.md) – OpenAPI-Dokumente, Refitter, generierte Refit-Clients
+- [docs/frontend.md](docs/frontend.md) – BFF, Authentifizierung mit Keycloak, Fluent UI Blazor
 - [docs/microservice-extraction.md](docs/microservice-extraction.md) – Schritt für Schritt ein Modul auslagern
 
 ## Microsoft-Referenzen (Auswahl)
@@ -150,5 +154,7 @@ dotnet test dotnet-blueprint.slnx
 - [Migrate a monolith to microservices (Strangler Fig)](https://learn.microsoft.com/azure/architecture/microservices/migrate-monolith)
 - [Secure a Blazor Web App with OIDC and the BFF pattern](https://learn.microsoft.com/aspnet/core/blazor/security/blazor-web-app-with-oidc?pivots=with-yarp-and-aspire)
 - [Aspire overview](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview)
+- [Aspire Keycloak integration](https://learn.microsoft.com/dotnet/aspire/authentication/keycloak-integration)
+- [Generate OpenAPI documents (ASP.NET Core)](https://learn.microsoft.com/aspnet/core/fundamentals/openapi/aspnetcore-openapi)
 - [EF Core – Migrations with multiple providers](https://learn.microsoft.com/ef/core/managing-schemas/migrations/providers)
 - [Transactional Outbox pattern](https://learn.microsoft.com/azure/architecture/databases/guide/transactional-outbox-cosmos)

@@ -1,10 +1,11 @@
 @page "/products"
 @attribute [Authorize]
-@inject CatalogApiClient Catalog
-@inject OrderingApiClient Ordering
-@inject NavigationManager Navigation
-@using Blueprint.Modules.Catalog.Contracts.Products
-@using Blueprint.Modules.Ordering.Contracts.Orders
+@inject ICatalogApi Catalog
+@inject IOrderingApi Ordering
+@using Blueprint.Modules.Catalog.Client
+@using Blueprint.Modules.Catalog.Client.Models
+@using Blueprint.Modules.Ordering.Client
+@using OrderingModels = Blueprint.Modules.Ordering.Client.Models
 
 <PageTitle>Produkte</PageTitle>
 
@@ -17,7 +18,7 @@
 
 <AuthorizeView Roles="catalog-admin" Context="authState">
     <FluentCard Style="margin-bottom: 16px;">
-        @* Client-Validierung mit denselben DataAnnotations wie der Server.
+        @* Client-Validierung mit den aus dem OpenAPI-Schema generierten DataAnnotations (gleiche Regeln wie der Server).
            Remarks: https://learn.microsoft.com/aspnet/core/blazor/forms/validation *@
         <EditForm Model="_newProduct" OnValidSubmit="CreateProductAsync" FormName="create-product">
             <DataAnnotationsValidator />
@@ -49,7 +50,7 @@
 </FluentDataGrid>
 
 @code {
-    private readonly CreateProductRequest _newProduct = new();
+    private CreateProductRequest _newProduct = NewProduct();
     private string? _message;
     private MessageBarIntent _messageIntent = MessageBarIntent.Info;
     private bool _busy;
@@ -68,7 +69,8 @@
         await RunAsync(async () =>
         {
             var created = await Catalog.CreateProductAsync(_newProduct);
-            Show($"Produkt '{created?.Name}' angelegt.", MessageBarIntent.Success);
+            Show($"Produkt '{created.Name}' angelegt.", MessageBarIntent.Success);
+            _newProduct = NewProduct();
             Items = await Catalog.GetProductsAsync();
         });
     }
@@ -77,11 +79,11 @@
     {
         await RunAsync(async () =>
         {
-            var order = await Ordering.PlaceOrderAsync(new PlaceOrderRequest
+            var order = await Ordering.PlaceOrderAsync(new OrderingModels.PlaceOrderRequest
             {
-                Lines = [new PlaceOrderLineRequest { ProductId = product.Id, Quantity = 1 }],
+                Lines = [new OrderingModels.PlaceOrderLineRequest { ProductId = product.Id, Quantity = 1 }],
             });
-            Show($"Bestellung {order?.Id} aufgegeben – Status: {order?.Status}. Die Bestandsreservierung läuft asynchron.", MessageBarIntent.Success);
+            Show($"Bestellung {order.Id} aufgegeben – Status: {order.Status}. Die Bestandsreservierung läuft asynchron.", MessageBarIntent.Success);
         });
     }
 
@@ -92,15 +94,17 @@
         {
             await action();
         }
-        catch (ApiException exception)
+        catch (Refit.ApiException exception)
         {
-            Show(exception.Message, MessageBarIntent.Error);
+            Show(await ApiErrors.GetMessageAsync(exception), MessageBarIntent.Error);
         }
         finally
         {
             _busy = false;
         }
     }
+
+    private static CreateProductRequest NewProduct() => new() { Currency = "EUR" };
 
     private void Show(string message, MessageBarIntent intent)
     {

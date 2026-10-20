@@ -21,9 +21,20 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.1" />
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.1" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="API-Clients (OpenAPI → Refit)">
+    <PackageVersion Include="Refit" Version="16.4.0" />
+    <PackageVersion Include="Refit.HttpClientFactory" Version="16.4.0" />
+    <PackageVersion Include="Refitter.MSBuild" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="Authentifizierung (Keycloak)">
+    <PackageVersion Include="Aspire.Keycloak.Authentication" Version="13.6.2-preview.1.26519.11" />
   </ItemGroup>
 
   <ItemGroup Label="Entity Framework Core">

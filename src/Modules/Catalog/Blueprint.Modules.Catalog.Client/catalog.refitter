@@ -1,0 +1,21 @@
+{
+  "openApiPath": "../../../../openapi/blueprint_catalog.json",
+  "namespace": "Blueprint.Modules.Catalog.Client",
+  "contractsNamespace": "Blueprint.Modules.Catalog.Client.Models",
+  "naming": {
+    "useOpenApiTitle": false,
+    "interfaceName": "CatalogApi"
+  },
+  "outputFolder": "./Generated",
+  "outputFilename": "CatalogApi.g.cs",
+  "useCancellationTokens": true,
+  "operationNameTemplate": "{operationName}Async",
+  "typeAccessibility": "Public",
+  "generateDefaultAdditionalProperties": false,
+  "codeGeneratorSettings": {
+    "generateNullableReferenceTypes": true,
+    "generateOptionalPropertiesAsNullable": false,
+    "arrayType": "System.Collections.Generic.List",
+    "arrayInstanceType": "System.Collections.Generic.List"
+  }
+}

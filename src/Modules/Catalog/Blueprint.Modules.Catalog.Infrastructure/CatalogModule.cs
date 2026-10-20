@@ -1,5 +1,6 @@
 using Blueprint.BuildingBlocks.Infrastructure.Messaging;
 using Blueprint.BuildingBlocks.Infrastructure.Persistence;
+using Blueprint.BuildingBlocks.Infrastructure.Web;
 using Blueprint.Modules.Catalog.Application;
 using Blueprint.Modules.Catalog.Application.Abstractions;
 using Blueprint.Modules.Catalog.Application.IntegrationEvents;
@@ -23,6 +24,9 @@ namespace Blueprint.Modules.Catalog.Infrastructure;
 /// </remarks>
 public static class CatalogModule
 {
+    /// <summary>Modulname (Schema, OpenAPI-Dokument, Gruppenname der Endpunkte).</summary>
+    public const string Name = CatalogDbContext.Module;
+
     public const string AdminPolicy = "catalog-admin";
 
     public static IHostApplicationBuilder AddCatalogModule(this IHostApplicationBuilder builder)
@@ -40,6 +44,9 @@ public static class CatalogModule
 
         // .NET 10: eingebaute Validierung (DataAnnotations) für Minimal APIs dieses Moduls.
         builder.Services.AddValidation();
+
+        // OpenAPI-Dokument des Moduls → Grundlage der generierten Refit-Clients (Blueprint.Modules.Catalog.Client).
+        builder.Services.AddModuleOpenApi(Name, "Blueprint Catalog API");
 
         return builder;
     }

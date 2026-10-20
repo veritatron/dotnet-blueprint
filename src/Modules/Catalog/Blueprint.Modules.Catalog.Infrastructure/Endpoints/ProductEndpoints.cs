@@ -25,13 +25,19 @@ internal static class ProductEndpoints
     {
         var group = endpoints.MapGroup(CatalogRoutes.Products)
             .WithTags("Catalog")
+            .WithGroupName(CatalogModule.Name)
             .RequireAuthorization();
 
         group.MapGet("/", GetProductsAsync).WithName("GetProducts").WithSummary("Liefert alle Produkte.");
-        group.MapGet("/{id:guid}", GetProductByIdAsync).WithName("GetProductById").WithSummary("Liefert ein Produkt.");
+        group.MapGet("/{id:guid}", GetProductByIdAsync)
+            .WithName("GetProductById")
+            .WithSummary("Liefert ein Produkt.")
+            .ProducesProblem(StatusCodes.Status404NotFound);
         group.MapPost("/", CreateProductAsync)
             .WithName("CreateProduct")
             .WithSummary("Legt ein Produkt an.")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .RequireAuthorization(CatalogModule.AdminPolicy);
 
         // Wird vom Catalog-Modul-Client (HTTP-Implementierung von ICatalogModuleApi) nach einer Auslagerung verwendet.

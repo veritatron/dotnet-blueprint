@@ -25,7 +25,7 @@ dotnet new web -n Blueprint.Services.Catalog -o src/Services/Blueprint.Services.
 builder.AddServiceDefaults();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddAuthentication().AddJwtBearer(/* wie Blueprint.Api */);
+builder.Services.AddAuthentication().AddKeycloakJwtBearer("keycloak", "blueprint", /* wie Blueprint.Api */);
 builder.AddEventBus();
 builder.AddCatalogModule();
 // …
@@ -41,7 +41,8 @@ In `Blueprint.Api`:
 ```csharp
 // builder.AddCatalogModule();   ← entfernen
 // Paket "Microsoft.AspNetCore.HeaderPropagation" hinzufügen
-builder.Services.AddCatalogModuleHttpClient(new Uri("https+http://catalog"))   // ICatalogModuleApi per HTTP
+// ICatalogModuleApi per HTTP – Implementierung nutzt den aus OpenAPI generierten Refit-Client ICatalogApi
+builder.Services.AddCatalogModuleHttpClient(new Uri("https+http://catalog"))
     .AddHeaderPropagation();                                                     // Benutzer-Token weiterreichen
 builder.Services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 // …
@@ -49,7 +50,8 @@ app.UseHeaderPropagation();
 ```
 
 `PlaceOrderCommandHandler` und alle anderen Aufrufer bleiben **unverändert** – sie kennen nur `ICatalogModuleApi`.
-Für Service-zu-Service-Aufrufe ohne Benutzerkontext stattdessen Client-Credentials verwenden.
+Für Service-zu-Service-Aufrufe ohne Benutzerkontext stattdessen Client Credentials verwenden
+(Vorlage: Keycloak-Client `blueprint-dev`).
 
 Remarks: [Header propagation](https://learn.microsoft.com/aspnet/core/fundamentals/http-requests#header-propagation-middleware),
 [HTTP resilience](https://learn.microsoft.com/dotnet/core/resilience/http-resilience),
@@ -67,8 +69,9 @@ Der BFF leitet `/api/catalog/**` an `https+http://catalog` und alles andere weit
 
 ## 6. Contracts als Paket
 
-`Blueprint.BuildingBlocks.Contracts`, `Blueprint.Modules.Catalog.Contracts` und `Blueprint.Modules.Catalog.Client`
-als NuGet-Pakete veröffentlichen, sobald die Services in getrennten Repositories leben
+`Blueprint.BuildingBlocks.Contracts`, `Blueprint.Modules.Catalog.Contracts` und den generierten
+`Blueprint.Modules.Catalog.Client` als NuGet-Pakete veröffentlichen – oder das OpenAPI-Dokument des Service als Artefakt
+bereitstellen und die Clients beim Konsumenten per Refitter erzeugen –, sobald die Services in getrennten Repositories leben
 ([Create a NuGet package](https://learn.microsoft.com/nuget/create-packages/creating-a-package-dotnet-cli)).
 Integration Events dann versioniert weiterentwickeln (nur additive Änderungen).
 
@@ -77,6 +80,7 @@ Integration Events dann versioniert weiterentwickeln (nur additive Änderungen).
 - [ ] Architekturtests grün (keine Referenzen auf Interna anderer Module)
 - [ ] Eigene Datenbank/Schema, eigener Connection String
 - [ ] Broker statt In-Memory in allen beteiligten Hosts
-- [ ] `ICatalogModuleApi` im Modulith per HTTP-Client registriert
+- [ ] `ICatalogModuleApi` im Modulith per HTTP-Client registriert (generierter Refit-Client)
+- [ ] `.refitter`-Dateien zeigen auf das OpenAPI-Dokument des neuen Service
 - [ ] BFF-Routing angepasst
 - [ ] Health Checks, Telemetrie (ServiceDefaults) im neuen Service

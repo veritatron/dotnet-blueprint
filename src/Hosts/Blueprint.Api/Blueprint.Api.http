@@ -1,25 +1,36 @@
 # Remarks: https://learn.microsoft.com/aspnet/core/test/http-files
-# Token erzeugen: dotnet user-jwts create --project src/Hosts/Blueprint.Api --audience blueprint-api --claim roles=catalog-admin
+# Token per Client Credentials vom lokalen Keycloak (Client "blueprint-dev", nur Entwicklung; Service Account hat catalog-admin).
+@keycloak = http://localhost:8080/realms/blueprint
 @api = https://localhost:7101
-@token = <token>
 
+# @name token
+POST {{keycloak}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=blueprint-dev&client_secret=blueprint-dev-secret
+
+###
 GET {{api}}/api/catalog/products
-Authorization: Bearer {{token}}
+Authorization: Bearer {{token.response.body.$.access_token}}
 
 ###
 POST {{api}}/api/catalog/products
-Authorization: Bearer {{token}}
+Authorization: Bearer {{token.response.body.$.access_token}}
 Content-Type: application/json
 
 { "sku": "BP-001", "name": "Blueprint Mug", "price": 12.90, "currency": "EUR", "initialStock": 10 }
 
 ###
 POST {{api}}/api/ordering/orders
-Authorization: Bearer {{token}}
+Authorization: Bearer {{token.response.body.$.access_token}}
 Content-Type: application/json
 
 { "lines": [ { "productId": "<product-id>", "quantity": 2 } ] }
 
 ###
 GET {{api}}/api/ordering/orders
-Authorization: Bearer {{token}}
+Authorization: Bearer {{token.response.body.$.access_token}}
+
+###
+# OpenAPI-Dokumente (Development)
+GET {{api}}/openapi/catalog.json

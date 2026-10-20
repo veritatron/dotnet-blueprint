@@ -1,5 +1,6 @@
 using Blueprint.BuildingBlocks.Infrastructure.Messaging;
 using Blueprint.BuildingBlocks.Infrastructure.Persistence;
+using Blueprint.BuildingBlocks.Infrastructure.Web;
 using Blueprint.Modules.Catalog.Contracts.IntegrationEvents;
 using Blueprint.Modules.Ordering.Application;
 using Blueprint.Modules.Ordering.Application.Abstractions;
@@ -19,6 +20,9 @@ namespace Blueprint.Modules.Ordering.Infrastructure;
 /// </summary>
 public static class OrderingModule
 {
+    /// <summary>Modulname (Schema, OpenAPI-Dokument, Gruppenname der Endpunkte).</summary>
+    public const string Name = OrderingDbContext.Module;
+
     public static IHostApplicationBuilder AddOrderingModule(this IHostApplicationBuilder builder)
     {
         builder.AddModuleDbContext<OrderingDbContext, OracleOrderingDbContext, PostgreSqlOrderingDbContext>(OrderingDbContext.Module);
@@ -31,6 +35,9 @@ public static class OrderingModule
         builder.Services.AddIntegrationEventHandler<StockReservationFailedIntegrationEvent, StockReservationFailedIntegrationEventHandler, OrderingDbContext>(OrderingDbContext.Module);
 
         builder.Services.AddValidation();
+
+        // OpenAPI-Dokument des Moduls → Grundlage der generierten Refit-Clients (Blueprint.Modules.Ordering.Client).
+        builder.Services.AddModuleOpenApi(Name, "Blueprint Ordering API");
 
         return builder;
     }

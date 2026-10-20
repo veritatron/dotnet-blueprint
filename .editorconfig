@@ -36,3 +36,7 @@ dotnet_diagnostic.IDE0005.severity = warning
 [**/Migrations/**.cs]
 generated_code = true
 dotnet_diagnostic.IDE0005.severity = none
+
+# Von Refitter generierter Code (OpenAPI → Refit)
+[**/Generated/**.cs]
+generated_code = true

@@ -13,13 +13,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
-    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" />
   </ItemGroup>
   <ItemGroup>
-    <!-- DTOs/Validierungsattribute aus den öffentlichen Modul-Verträgen (keine Domain/Infrastruktur!). -->
-    <ProjectReference Include="..\..\Modules\Catalog\Blueprint.Modules.Catalog.Contracts\Blueprint.Modules.Catalog.Contracts.csproj" />
-    <ProjectReference Include="..\..\Modules\Ordering\Blueprint.Modules.Ordering.Contracts\Blueprint.Modules.Ordering.Contracts.csproj" />
+    <!-- Aus den OpenAPI-Dokumenten generierte Refit-Clients (Refitter) – keine Domain/Infrastruktur! -->
+    <ProjectReference Include="..\..\Modules\Catalog\Blueprint.Modules.Catalog.Client\Blueprint.Modules.Catalog.Client.csproj" />
+    <ProjectReference Include="..\..\Modules\Ordering\Blueprint.Modules.Ordering.Client\Blueprint.Modules.Ordering.Client.csproj" />
   </ItemGroup>
 </Project>

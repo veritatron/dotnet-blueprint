@@ -14,8 +14,8 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationStateDeserialization();
 
-// API-Aufrufe gehen relativ an den BFF (gleiche Origin, Cookie-Authentifizierung).
+// Generierte Refit-Clients (OpenAPI → Refitter); Aufrufe gehen relativ an den BFF (gleiche Origin, Cookie).
 // Remarks: https://learn.microsoft.com/aspnet/core/blazor/call-web-api
-builder.Services.AddApiClients(new Uri(builder.HostEnvironment.BaseAddress));
+builder.Services.AddBlueprintApiClients(new Uri(builder.HostEnvironment.BaseAddress));
 
 await builder.Build().RunAsync();

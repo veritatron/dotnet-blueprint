@@ -24,6 +24,16 @@ jobs:
       - name: Build
         run: dotnet build dotnet-blueprint.slnx --no-restore -c Release
 
+      # Der Build erzeugt openapi/*.json (API) und daraus die Refit-Clients (Refitter).
+      # Beides ist eingecheckt – der Build darf nichts verändern, sonst wurde die Generierung vergessen.
+      - name: Check OpenAPI documents and generated clients are up to date
+        run: |
+          if [ -n "$(git status --porcelain -- openapi 'src/**/Generated/**')" ]; then
+            git --no-pager diff -- openapi 'src/**/Generated/**'
+            echo "::error::OpenAPI-Dokumente bzw. generierte Clients sind veraltet. Lokal 'dotnet build' ausführen und committen."
+            exit 1
+          fi
+
       - name: Test (Unit + Architektur)
         run: dotnet test dotnet-blueprint.slnx --no-build -c Release
 

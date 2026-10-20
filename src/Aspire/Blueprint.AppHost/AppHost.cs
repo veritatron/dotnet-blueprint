@@ -31,22 +31,22 @@ var keycloak = builder.AddKeycloak("keycloak", port: 8080)
     .WithRealmImport("./Realms")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var realmUrl = ReferenceExpression.Create($"{keycloak.GetEndpoint("http")}/realms/blueprint");
 var webClientSecret = builder.AddParameter("web-client-secret", secret: true);
 
+// WithReference(keycloak) → Service Discovery "keycloak"; API und BFF nutzen Aspire.Keycloak.Authentication.
 var api = builder.AddProject<Projects.Blueprint_Api>("api")
     .WithReference(database)
     .WaitFor(database)
+    .WithReference(keycloak)
     .WaitFor(keycloak)
-    .WithEnvironment("Database__Provider", databaseProvider)
-    .WithEnvironment("Authentication__Schemes__Bearer__Authority", realmUrl)
-    .WithEnvironment("Authentication__Schemes__Bearer__RequireHttpsMetadata", "false");
+    .WithEnvironment("Database__Provider", databaseProvider);
 
 builder.AddProject<Projects.Blueprint_Web>("web")
     .WithExternalHttpEndpoints()
     .WithReference(api)
     .WaitFor(api)
-    .WithEnvironment("Authentication__Oidc__Authority", realmUrl)
-    .WithEnvironment("Authentication__Oidc__ClientSecret", webClientSecret);
+    .WithReference(keycloak)
+    .WaitFor(keycloak)
+    .WithEnvironment("Authentication__Keycloak__ClientSecret", webClientSecret);
 
 await builder.Build().RunAsync();

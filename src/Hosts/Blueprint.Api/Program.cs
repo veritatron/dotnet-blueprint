@@ -1,6 +1,7 @@
 using Blueprint.BuildingBlocks.Infrastructure.Messaging;
 using Blueprint.BuildingBlocks.Infrastructure.Persistence;
 using Blueprint.BuildingBlocks.Infrastructure.Web;
+using Blueprint.ServiceDefaults.Authentication;
 using Blueprint.Modules.Catalog.Infrastructure;
 using Blueprint.Modules.Ordering.Infrastructure;
 
@@ -15,21 +16,22 @@ builder.AddServiceDefaults();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-// OpenAPI-Dokument (eingebaut seit .NET 9)
-// Remarks: https://learn.microsoft.com/aspnet/core/fundamentals/openapi/aspnetcore-openapi
-builder.Services.AddOpenApi();
+// Authentifizierung: JWT Bearer gegen Keycloak (OIDC). Die Keycloak-Adresse kommt per Service Discovery
+// ("keycloak" → Aspire bzw. Konfiguration "Services:keycloak"), Realm/Audience aus "Authentication:Keycloak".
+// Remarks: https://learn.microsoft.com/dotnet/aspire/authentication/keycloak-integration#add-jwt-bearer-authentication
+//          https://learn.microsoft.com/aspnet/core/security/authentication/configure-jwt-bearer-authentication
+var keycloak = builder.Configuration.GetSection(KeycloakOptions.SectionName).Get<KeycloakOptions>() ?? new KeycloakOptions();
+builder.Services.AddAuthentication()
+    .AddKeycloakJwtBearer(keycloak.ServiceName, keycloak.Realm, options =>
+    {
+        options.Audience = keycloak.Audience;
+        options.RequireHttpsMetadata = keycloak.RequireHttpsMetadata;
 
-// Authentifizierung: JWT Bearer. Konfiguration über "Authentication:Schemes:Bearer" (Authority, ValidAudiences, …).
-// Lokal ohne Identity Provider: `dotnet user-jwts create` (siehe README).
-// Remarks: https://learn.microsoft.com/aspnet/core/security/authentication/configure-jwt-bearer-authentication
-//          https://learn.microsoft.com/aspnet/core/security/authentication/jwt-authn
-builder.Services.AddAuthentication().AddJwtBearer(options =>
-{
-    // Original-Claim-Namen des Tokens behalten (sub, roles, …) statt auf WS-Federation-URIs zu mappen.
-    options.MapInboundClaims = false;
-    options.TokenValidationParameters.NameClaimType = "name";
-    options.TokenValidationParameters.RoleClaimType = "roles";
-});
+        // Original-Claim-Namen des Tokens behalten (sub, roles, …) statt auf WS-Federation-URIs zu mappen.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters.NameClaimType = "name";
+        options.TokenValidationParameters.RoleClaimType = "roles";
+    });
 builder.Services.AddAuthorization();
 
 // Event Bus (Transport per Konfiguration "Messaging:Transport", Start: InMemory)
@@ -46,6 +48,7 @@ app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
+    // /openapi/catalog.json, /openapi/ordering.json
     app.MapOpenApi();
 
     // Nur Development! Produktion: idempotente SQL-Skripte / Migration Bundles im Deployment.

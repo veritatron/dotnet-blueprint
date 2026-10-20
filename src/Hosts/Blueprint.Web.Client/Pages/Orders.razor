@@ -1,7 +1,8 @@
 @page "/orders"
 @attribute [Authorize]
-@inject OrderingApiClient Ordering
-@using Blueprint.Modules.Ordering.Contracts.Orders
+@inject IOrderingApi Ordering
+@using Blueprint.Modules.Ordering.Client
+@using Blueprint.Modules.Ordering.Client.Models
 
 <PageTitle>Bestellungen</PageTitle>
 
@@ -51,9 +52,9 @@
             Items = await Ordering.GetMyOrdersAsync();
             _error = null;
         }
-        catch (ApiException exception)
+        catch (Refit.ApiException exception)
         {
-            _error = exception.Message;
+            _error = await ApiErrors.GetMessageAsync(exception);
         }
         finally
         {

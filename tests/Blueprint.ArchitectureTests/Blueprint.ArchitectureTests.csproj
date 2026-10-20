@@ -4,5 +4,6 @@
     <ProjectReference Include="..\..\src\Hosts\Blueprint.Api\Blueprint.Api.csproj" />
     <ProjectReference Include="..\..\src\Hosts\Blueprint.Web\Blueprint.Web.csproj" />
     <ProjectReference Include="..\..\src\Modules\Catalog\Blueprint.Modules.Catalog.Client\Blueprint.Modules.Catalog.Client.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Ordering\Blueprint.Modules.Ordering.Client\Blueprint.Modules.Ordering.Client.csproj" />
   </ItemGroup>
 </Project>

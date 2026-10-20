@@ -1,3 +1,4 @@
+using Blueprint.ServiceDefaults.Authentication;
 using Blueprint.Web.Bff;
 using Blueprint.Web.Client.Services;
 using Blueprint.Web.Components;
@@ -19,15 +20,19 @@ builder.AddServiceDefaults();
 var apiBaseAddress = builder.Configuration["Bff:ApiBaseAddress"] ?? "https+http://api";
 
 // ---------------------------------------------------------------------------------------------
-// Authentifizierung: OIDC (Authorization Code + PKCE) mit Cookie-Session – Muster "BFF".
-// Remarks: https://learn.microsoft.com/aspnet/core/blazor/security/blazor-web-app-with-oidc?pivots=with-yarp-and-aspire
+// Authentifizierung: OIDC gegen Keycloak (Authorization Code + PKCE) mit Cookie-Session – Muster "BFF".
+// Keycloak-Adresse per Service Discovery ("keycloak"), Realm/Client aus "Authentication:Keycloak",
+// Client-Secret aus User Secrets / Umgebungsvariablen (Aspire-Parameter).
+// Remarks: https://learn.microsoft.com/dotnet/aspire/authentication/keycloak-integration#add-openid-connect-authentication
+//          https://learn.microsoft.com/aspnet/core/blazor/security/blazor-web-app-with-oidc?pivots=with-yarp-and-aspire
 // ---------------------------------------------------------------------------------------------
+var keycloak = builder.Configuration.GetSection(KeycloakOptions.SectionName).Get<KeycloakOptions>() ?? new KeycloakOptions();
 builder.Services.AddAuthentication(OidcScheme)
-    .AddOpenIdConnect(OidcScheme, options =>
+    .AddKeycloakOpenIdConnect(keycloak.ServiceName, keycloak.Realm, OidcScheme, options =>
     {
-        // Authority, ClientId, ClientSecret, RequireHttpsMetadata aus "Authentication:Oidc"
-        // (Secret lokal via User Secrets, in Produktion z. B. Azure Key Vault).
-        builder.Configuration.GetSection("Authentication:Oidc").Bind(options);
+        options.ClientId = keycloak.ClientId;
+        options.ClientSecret = keycloak.ClientSecret;
+        options.RequireHttpsMetadata = keycloak.RequireHttpsMetadata;
 
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
@@ -59,7 +64,7 @@ builder.Services.AddFluentUIComponents();
 // API-Clients für das Prerendering auf dem Server (gleiche Klassen wie im Browser, aber direkt gegen die API + Token).
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ServerAccessTokenHandler>();
-builder.Services.AddApiClients(new Uri(apiBaseAddress), client => client.AddHttpMessageHandler<ServerAccessTokenHandler>());
+builder.Services.AddBlueprintApiClients(new Uri(apiBaseAddress), client => client.AddHttpMessageHandler<ServerAccessTokenHandler>());
 
 // YARP-Forwarder mit Service Discovery
 // Remarks: https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/direct-forwarding

@@ -78,13 +78,25 @@ public sealed class ModuleBoundaryTests
     }
 
     [TestMethod]
-    public void BlazorClient_OnlyReferencesContracts()
+    public void BlazorClient_OnlyReferencesGeneratedApiClients()
     {
         var violations = ReferencedBlueprintAssemblies("Blueprint.Web.Client")
+            .Where(name => !name.EndsWith(".Client", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.IsEmpty(violations, $"Der WebAssembly-Client darf nur die generierten API-Clients kennen: {string.Join(", ", violations)}");
+    }
+
+    [TestMethod]
+    [DataRow("Catalog")]
+    [DataRow("Ordering")]
+    public void GeneratedClients_DoNotReferenceModuleInternals(string module)
+    {
+        var violations = ReferencedBlueprintAssemblies($"Blueprint.Modules.{module}.Client")
             .Where(name => !name.EndsWith(".Contracts", StringComparison.Ordinal))
             .ToList();
 
-        Assert.IsEmpty(violations, $"Der WebAssembly-Client darf nur Contracts kennen: {string.Join(", ", violations)}");
+        Assert.IsEmpty(violations, $"{module}.Client darf nur Contracts referenzieren (unabhängig deploybar): {string.Join(", ", violations)}");
     }
 
     private static List<string> ReferencedBlueprintAssemblies(string assemblyName) =>

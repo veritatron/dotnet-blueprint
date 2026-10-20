@@ -21,11 +21,18 @@ internal static class OrderEndpoints
     {
         var group = endpoints.MapGroup(OrderingRoutes.Orders)
             .WithTags("Ordering")
+            .WithGroupName(OrderingModule.Name)
             .RequireAuthorization();
 
         group.MapGet("/", GetMyOrdersAsync).WithName("GetMyOrders").WithSummary("Liefert die Bestellungen des angemeldeten Benutzers.");
-        group.MapGet("/{id:guid}", GetOrderByIdAsync).WithName("GetOrderById").WithSummary("Liefert eine Bestellung.");
-        group.MapPost("/", PlaceOrderAsync).WithName("PlaceOrder").WithSummary("Gibt eine Bestellung auf (Bestandsreservierung erfolgt asynchron).");
+        group.MapGet("/{id:guid}", GetOrderByIdAsync)
+            .WithName("GetOrderById")
+            .WithSummary("Liefert eine Bestellung.")
+            .ProducesProblem(StatusCodes.Status404NotFound);
+        group.MapPost("/", PlaceOrderAsync)
+            .WithName("PlaceOrder")
+            .WithSummary("Gibt eine Bestellung auf (Bestandsreservierung erfolgt asynchron).")
+            .ProducesValidationProblem();
 
         return endpoints;
     }

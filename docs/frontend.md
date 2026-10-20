@@ -17,14 +17,37 @@ Remarks:
 - [Prerendered state persistence](https://learn.microsoft.com/aspnet/core/blazor/state-management/prerendered-state-persistence)
 - [YARP direct forwarding](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/direct-forwarding)
 
-## Identity Provider
+## Authentifizierung mit Keycloak (OIDC)
 
-Lokal: Keycloak (Aspire, Realm `src/Aspire/Blueprint.AppHost/Realms/blueprint-realm.json`). Der Client `blueprint-web`
-erhält per Mapper die Audience `blueprint-api` und Realm-Rollen als Claim `roles`.
-Für Microsoft Entra ID nur Konfiguration ändern (`Authentication:Oidc:*` im BFF, `Authentication:Schemes:Bearer:*` in der API),
-App-Rollen erscheinen dort ebenfalls als `roles`-Claim.
+Beide Hosts verwenden die **Aspire-Keycloak-Integration** (`Aspire.Keycloak.Authentication`). Die Keycloak-Adresse
+kommt per Service Discovery (`keycloak`), Realm/Client/Audience aus `Authentication:Keycloak`:
 
-Remarks: [Microsoft identity platform – app roles](https://learn.microsoft.com/entra/identity-platform/howto-add-app-roles-in-apps)
+| Host | Aufruf | Zweck |
+|---|---|---|
+| `Blueprint.Web` (BFF) | `AddKeycloakOpenIdConnect("keycloak", realm, …)` | Login (Code + PKCE, PAR), Cookie-Session, Refresh Token |
+| `Blueprint.Api` | `AddKeycloakJwtBearer("keycloak", realm, …)` | Validierung der Access Tokens (Issuer, Signatur, Audience `blueprint-api`) |
+
+Realm `blueprint` (Import aus `src/Aspire/Blueprint.AppHost/Realms/blueprint-realm.json`):
+
+- Client `blueprint-web` – vertraulich, Authorization Code + PKCE (S256), Mapper für Audience `blueprint-api` und
+  Realm-Rollen als Claim `roles`.
+- Client `blueprint-dev` – nur Entwicklung: Client Credentials (Service Account mit `catalog-admin`) für `.http`-Dateien
+  und als Vorlage für Service-zu-Service-Aufrufe.
+- Rolle `catalog-admin`, Benutzer `alice` (Admin) und `bob`.
+
+Mit vertrauenswürdigem Entwicklerzertifikat startet Aspire Keycloak per **HTTPS** (`https://localhost:8080`).
+Ohne Aspire: `Services:keycloak:https:0` bzw. `…:http:0` setzen (siehe `appsettings.Development.json`).
+
+Remarks:
+- [Aspire Keycloak integration](https://learn.microsoft.com/dotnet/aspire/authentication/keycloak-integration)
+- [Configure JWT bearer authentication](https://learn.microsoft.com/aspnet/core/security/authentication/configure-jwt-bearer-authentication)
+- [Keycloak: Server Administration – OIDC clients](https://www.keycloak.org/docs/latest/server_admin/#_oidc_clients)
+
+## API-Clients
+
+Blazor-Komponenten injizieren die **generierten** Refit-Interfaces (`ICatalogApi`, `IOrderingApi`), siehe
+[api-clients.md](api-clients.md). Registrierung: `AddBlueprintApiClients(baseAddress, …)` – im Browser mit der
+BFF-Adresse, beim Prerendering mit der API-Adresse plus `ServerAccessTokenHandler`.
 
 ## Fluent UI Blazor v5
 
@@ -32,8 +55,8 @@ Remarks: [Microsoft identity platform – app roles](https://learn.microsoft.com
 - `FluentNumberInput` lädt die Bibliothek **IMask** standardmäßig zur Laufzeit von `unpkg.com`. Der Blueprint liefert sie
   stattdessen lokal aus (`Blueprint.Web/wwwroot/lib/imask`, MIT-Lizenz) – kein CDN zur Laufzeit, CSP-freundlich, offline-fähig.
   Bei Updates von Fluent UI die erwartete IMask-Version im Paket prüfen (`Microsoft.FluentUI.AspNetCore.Components.lib.module.js`).
-- Formulare validieren mit denselben DataAnnotations wie die API (`*.Contracts`), serverseitig über die eingebaute
-  Minimal-API-Validierung von .NET 10.
+- Formulare binden an die generierten Request-Modelle; deren DataAnnotations stammen aus dem OpenAPI-Schema und
+  entsprechen damit der serverseitigen Minimal-API-Validierung von .NET 10.
 
 Remarks: [Fluent UI Blazor](https://www.fluentui-blazor.net), [Blazor forms validation](https://learn.microsoft.com/aspnet/core/blazor/forms/validation)
 

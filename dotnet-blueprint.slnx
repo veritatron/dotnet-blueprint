@@ -18,13 +18,19 @@
   <Folder Name="/src/Modules/" />
   <Folder Name="/src/Modules/Catalog/">
     <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Application/Blueprint.Modules.Catalog.Application.csproj" />
-    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Client/Blueprint.Modules.Catalog.Client.csproj" />
+    <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Client/Blueprint.Modules.Catalog.Client.csproj">
+      <!-- Nur Build-Reihenfolge: die API erzeugt openapi/*.json, aus denen Refitter den Client generiert. -->
+      <BuildDependency Project="src/Hosts/Blueprint.Api/Blueprint.Api.csproj" />
+    </Project>
     <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Contracts/Blueprint.Modules.Catalog.Contracts.csproj" />
     <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Domain/Blueprint.Modules.Catalog.Domain.csproj" />
     <Project Path="src/Modules/Catalog/Blueprint.Modules.Catalog.Infrastructure/Blueprint.Modules.Catalog.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Ordering/">
     <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Application/Blueprint.Modules.Ordering.Application.csproj" />
+    <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Client/Blueprint.Modules.Ordering.Client.csproj">
+      <BuildDependency Project="src/Hosts/Blueprint.Api/Blueprint.Api.csproj" />
+    </Project>
     <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Contracts/Blueprint.Modules.Ordering.Contracts.csproj" />
     <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Domain/Blueprint.Modules.Ordering.Domain.csproj" />
     <Project Path="src/Modules/Ordering/Blueprint.Modules.Ordering.Infrastructure/Blueprint.Modules.Ordering.Infrastructure.csproj" />
@@ -32,6 +38,10 @@
   <Folder Name="/tests/">
     <Project Path="tests/Blueprint.ArchitectureTests/Blueprint.ArchitectureTests.csproj" />
     <Project Path="tests/Blueprint.UnitTests/Blueprint.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/openapi/">
+    <File Path="openapi/blueprint_catalog.json" />
+    <File Path="openapi/blueprint_ordering.json" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

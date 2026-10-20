@@ -16,17 +16,26 @@ public sealed partial class GlobalExceptionHandler(
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        LogUnhandledException(exception, httpContext.Request.Path);
+        // Fehlerhafte Requests (z. B. ungültiges JSON) sind Client-Fehler und behalten ihren Statuscode (400).
+        // Remarks: https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/handle-errors
+        var (status, title) = exception is BadHttpRequestException badRequest
+            ? (badRequest.StatusCode, "Die Anfrage ist ungültig.")
+            : (StatusCodes.Status500InternalServerError, "Ein unerwarteter Fehler ist aufgetreten.");
 
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        if (status >= StatusCodes.Status500InternalServerError)
+        {
+            LogUnhandledException(exception, httpContext.Request.Path);
+        }
+
+        httpContext.Response.StatusCode = status;
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             HttpContext = httpContext,
             Exception = exception,
             ProblemDetails =
             {
-                Title = "Ein unerwarteter Fehler ist aufgetreten.",
-                Status = StatusCodes.Status500InternalServerError,
+                Title = title,
+                Status = status,
             },
         });
     }
